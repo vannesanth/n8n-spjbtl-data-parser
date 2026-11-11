@@ -1,0 +1,317 @@
+{
+  "name": "First",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -112
+      ],
+      "id": "0fc68a46-9c72-426b-8fbc-2afe97b03339",
+      "name": "01 Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98e0e73e-149f-4d01-a08b-70d7c4eedb70",
+              "name": "permohonan",
+              "value": "[   { \"no_agenda\": \"AGD-26110001\", \"id_pelanggan\": \"990000000101\", \"nama\": \"Toko Sinar Jaya\", \"layanan\": \"Pasang Baru\", \"daya_va\": 3500, \"tarif\": \"B-1\", \"unit\": \"ULP Simulasi A\", \"tgl_bayar\": \"2026-11-02\", \"tgl_ttd_spjbtl\": \"2026-11-03\" },   { \"no_agenda\": \"AGD-26110002\", \"id_pelanggan\": \"99000000102\", \"nama\": \"Rumah Ibu Sari\", \"layanan\": \"Tambah Daya\", \"daya_va\": 2200, \"tarif\": \"R-1\", \"unit\": \"ULP Simulasi B\", \"tgl_bayar\": \"2026-11-02\", \"tgl_ttd_spjbtl\": \"2026-11-04\" },   { \"no_agenda\": \"AGD-26110003\", \"id_pelanggan\": \"990000000103\", \"nama\": \"Kantor Notaris Melati\", \"layanan\": \"Pasang Baru\", \"daya_va\": 16500, \"tarif\": \"B-2\", \"unit\": \"ULP Simulasi A\", \"tgl_bayar\": \"2026-11-03\", \"tgl_ttd_spjbtl\": \"\" },   { \"no_agenda\": \"AGD-26110004\", \"id_pelanggan\": \"990000000104\", \"nama\": \"Rumah Bapak Andi\", \"layanan\": \"Tambah Daya\", \"daya_va\": 5500, \"tarif\": \"R-2\", \"unit\": \"ULP Simulasi C\", \"tgl_bayar\": \"2026-11-04\", \"tgl_ttd_spjbtl\": \"2026-11-05\" },   { \"no_agenda\": \"AGD-26110005\", \"id_pelanggan\": \"990000000105\", \"nama\": \"Gudang Logistik Kenanga\", \"layanan\": \"Pasang Baru\", \"daya_va\": 41500, \"tarif\": \"B-2\", \"unit\": \"ULP Simulasi C\", \"tgl_bayar\": \"2026-11-05\", \"tgl_ttd_spjbtl\": \"\" } ]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        256,
+        -112
+      ],
+      "id": "b548e094-0fb5-478e-b743-91a359069b6e",
+      "name": "02 Data SPJBTL"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.permohonan || [];\nreturn data.map((row) => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -112
+      ],
+      "id": "fff72194-df6d-47cd-821a-ded1f921db04",
+      "name": "03 Pecah Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "92a09f3a-1795-43d9-a891-02eb458ed380",
+              "leftValue": "={{ $json.id_pelanggan }}",
+              "rightValue": "^\\d{12}$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            },
+            {
+              "id": "be17fdab-2451-4d12-bcb2-3eae3823788b",
+              "leftValue": "={{ $json.tgl_ttd_spjbtl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        704,
+        -112
+      ],
+      "id": "40027d5d-75b4-48a7-87ae-9160e55a8c30",
+      "name": "04 Cek Kelengkapan"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dfbb0046-b94e-4790-82eb-6bbaf1745bd7",
+              "name": "status",
+              "value": "Lengkap",
+              "type": "string"
+            },
+            {
+              "id": "f8ea60b2-6fb7-4cc4-940c-42ad300063c3",
+              "name": "tindak_lanjut",
+              "value": "Jadwalkan penyambungan",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        928,
+        -208
+      ],
+      "id": "435b2eef-66b4-4305-80fe-6129e93160ae",
+      "name": "05 Tandai Lengkap"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8037faa0-d269-4394-8d85-6ccd828ceb02",
+              "name": "status",
+              "value": "Perlu Tindak Lanjut",
+              "type": "string"
+            },
+            {
+              "id": "ca03c197-319e-4c22-a436-966867027cbe",
+              "name": "tindak_lanjut",
+              "value": "={{ /^\\d{12}$/.test($json.id_pelanggan) ? 'Minta tanda tangan SPJBTL' : 'Verifikasi ID pelanggan' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        928,
+        -16
+      ],
+      "id": "4e731198-3bec-469d-8aa2-9432f6677129",
+      "name": "06 Tandai Tindak Lanjut"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1168,
+        -128
+      ],
+      "id": "e8eb6191-31ef-42f7-bf95-e9b274b44349",
+      "name": "07 Gabung Hasil"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua item dari node sebelumnya\nconst rows = $input.all().map((item) => item.json);\nconst lengkap = rows.filter((r) => r.status === 'Lengkap').length;\nconst perlu = rows.length - lengkap;\nconst tanggal = $now.setLocale('id').toFormat('d LLLL yyyy');\n\n// Satu baris tabel per permohonan\nconst baris = rows.map((r) =>\n  `<tr><td>${r.no_agenda}</td><td>${r.nama}</td><td>${r.layanan}</td>` +\n  `<td>${r.daya_va} VA</td><td>${r.status}</td><td>${r.tindak_lanjut}</td></tr>`\n).join('');\n\nconst html = `<p>Rekap SPJBTL ${tanggal}</p>\n<p>Total: ${rows.length} | Lengkap: ${lengkap} | Perlu tindak lanjut: ${perlu}</p>\n<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\">\n<tr><th>No. Agenda</th><th>Nama</th><th>Layanan</th><th>Daya</th><th>Status</th><th>Tindak Lanjut</th></tr>\n${baris}</table>`;\n\nreturn [{ json: {\n  total: rows.length, lengkap, perlu_tindak_lanjut: perlu,\n  subject: `Rekap SPJBTL ${tanggal}: ${perlu} perlu tindak lanjut`,\n  html,\n} }];;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -128
+      ],
+      "id": "853850a9-4c36-4905-b5e6-8a440641600d",
+      "name": "08 Buat Rekap"
+    },
+    {
+      "parameters": {
+        "sendTo": "vnathania@hacktiv8.ac.id ",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        -128
+      ],
+      "id": "4ab0e43c-92d5-4cb9-b3cc-05d0db1f9bec",
+      "name": "09 Kirim Rekap",
+      "webhookId": "7b982a47-4bdb-4fa0-9dba-d18635307955",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kXfVHHepwP5f5dV6",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "01 Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "02 Data SPJBTL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 Data SPJBTL": {
+      "main": [
+        [
+          {
+            "node": "03 Pecah Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 Pecah Data": {
+      "main": [
+        [
+          {
+            "node": "04 Cek Kelengkapan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 Cek Kelengkapan": {
+      "main": [
+        [
+          {
+            "node": "05 Tandai Lengkap",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "06 Tandai Tindak Lanjut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "05 Tandai Lengkap": {
+      "main": [
+        [
+          {
+            "node": "07 Gabung Hasil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 Tandai Tindak Lanjut": {
+      "main": [
+        [
+          {
+            "node": "07 Gabung Hasil",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "07 Gabung Hasil": {
+      "main": [
+        [
+          {
+            "node": "08 Buat Rekap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "08 Buat Rekap": {
+      "main": [
+        [
+          {
+            "node": "09 Kirim Rekap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "7a1e0d51-489b-4f99-8363-de90c7c9143b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7b67b48bdacde48af12f87999ece143af9c8dc7f0022c770a123429e33fbd8c1"
+  },
+  "nodeGroups": [],
+  "id": "fR3ELFc4XBjcq2BY",
+  "tags": []
+}
